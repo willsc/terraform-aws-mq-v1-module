@@ -49,6 +49,90 @@ module "mq" {
 }
 ```
 
+## ACM CA Certificate Examples
+## With Route53 (Automatic DNS Validation)
+```
+module "mq" {
+  source = "../../"
+
+  broker_name     = "my-broker"
+  deployment_mode = "ACTIVE_STANDBY_MULTI_AZ"
+  
+  vpc_cidr_block = "10.0.0.0/16"
+
+  nlb_enabled            = true
+  create_acm_certificate = true
+  cert_domain_name       = "mq.example.com"
+  
+  # Automatic DNS validation
+  route53_zone_id = "Z1234567890ABC"
+
+  nlb_listeners = {
+    openwire = { port = 61617, protocol = "TLS" }
+  }
+
+  username = "admin"
+  password = var.password
+}
+
+```
+## Without Route53 (Manual DNS Validation)
+```
+module "mq" {
+  source = "../../"
+
+  broker_name     = "my-broker"
+  deployment_mode = "ACTIVE_STANDBY_MULTI_AZ"
+  
+  vpc_cidr_block = "10.0.0.0/16"
+
+  nlb_enabled            = true
+  create_acm_certificate = true
+  cert_domain_name       = "mq.example.com"
+  
+  # No route53_zone_id - check output for DNS records to create manually
+
+  nlb_listeners = {
+    openwire = { port = 61617, protocol = "TLS" }
+  }
+
+  username = "admin"
+  password = var.password
+}
+
+# After apply, create these DNS records manually:
+# output "certificate_validation_records" shows the CNAME records needed
+
+```
+
+## With Email Validation (No DNS)
+
+```
+module "mq" {
+  source = "../../"
+
+  broker_name     = "my-broker"
+  deployment_mode = "ACTIVE_STANDBY_MULTI_AZ"
+  
+  vpc_cidr_block = "10.0.0.0/16"
+
+  nlb_enabled            = true
+  create_acm_certificate = true
+  cert_domain_name       = "mq.example.com"
+  cert_validation_method = "EMAIL"  # AWS sends validation email
+
+  nlb_listeners = {
+    openwire = { port = 61617, protocol = "TLS" }
+  }
+
+  username = "admin"
+  password = var.password
+}
+
+```
+
+
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
